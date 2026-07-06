@@ -123,6 +123,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 				}
 			}
 
+
+
+
+
 			DrawLine(cx - 10, cy, cx + 10, cy,  GetColor(0, 255, 255));
 			DrawLine(cx,cy - 10,cx, cy + 10 ,GetColor(0, 255, 255));
 
