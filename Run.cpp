@@ -2,7 +2,6 @@
 #define ENEMY_MAX 20
 const int WIDTH = 1280, HEIGHT = 720;
 
-
 float playerX;
 float playerY;
 
@@ -32,7 +31,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 	if (DxLib_Init() == -1) return -1;
 	SetDrawScreen(DX_SCREEN_BACK);
 	SetMouseDispFlag(false);
-	SetBackgroundColor(0, 0, 0);
+	SetBackgroundColor(255, 255, 255);
 
 	cx = WIDTH / 2;
 	cy = HEIGHT / 2;
@@ -119,7 +118,7 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 			{
 				if (enemyActive[i] == 1)
 				{
-					DrawCircle(enemyX[i], enemyY[i], 15, GetColor(255, 0, 0), true);
+					DrawCircle(enemyX[i], enemyY[i], 15, GetColor(135, 206, 250), true);
 				}
 			}
 
@@ -127,10 +126,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 
 
 
-			DrawLine(cx - 10, cy, cx + 10, cy,  GetColor(0, 255, 255));
-			DrawLine(cx,cy - 10,cx, cy + 10 ,GetColor(0, 255, 255));
+			DrawLine(cx - 3, cy, cx + 3, cy,  GetColor(0, 0, 0));
+			DrawLine(cx,cy - 3,cx, cy + 3 ,GetColor(0, 0, 0));
 
-			DrawFormatString(10, 10, GetColor(255, 255, 255), "score; %d", score);
+			DrawFormatString(10, 10, GetColor(0, 0, 0), "score; %d", score);
 
 			ScreenFlip();
 			WaitTimer(16);
