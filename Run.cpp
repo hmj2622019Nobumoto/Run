@@ -1,5 +1,9 @@
 #include "DxLib.h"
 #define ENEMY_MAX 20
+#define TITLE 0
+#define GAME 1
+#define RESULT 2
+
 const int WIDTH = 1280, HEIGHT = 720;
 
 float playerX;
@@ -22,6 +26,9 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 	int score = 0;
 	int spawnTimer = 0;
 	int mouseInput = 0;
+	int hiScore = 0;
+	int missCount = 0;
+	int State = 0;
 	int oldMouseInput = 0;
 
 	SRand (GetNowCount());
@@ -47,90 +54,141 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdline
 
 		SetMousePoint(WIDTH / 2, HEIGHT / 2);
 
-		spawnTimer++;
-		if (spawnTimer >= 40)
+		if (State == 0)
 		{
-			spawnTimer = 0;
-
-			for (i = 0; i < ENEMY_MAX; i++)
+			DrawFormatString(WIDTH / 2 - 68, HEIGHT / 2 - 50, GetColor(0, 0, 0), "TIMING SHOOTING");
+			DrawFormatString(WIDTH / 2 - 63, HEIGHT / 2 + 30, GetColor(0, 0, 200), "CLICK TO START");
+			DrawFormatString(30, 10, GetColor(255, 0, 0), "HI-SC: %d", hiScore);
+			
+			if ((mouseInput & MOUSE_INPUT_LEFT) && !(oldMouseInput & MOUSE_INPUT_LEFT))
 			{
-				if (enemyActive[i] == 0)
-				{
-					int side = GetRand(1);
-
-					if (side == 0)
-					{
-						enemyX[i] = 10;
-						enemyDirection[i] = -1;
-					}
-					else
-					{
-						enemyX[i] = WIDTH - 10;
-						enemyDirection[i] = 1;
-					}
-
-					enemyY[i] = cy;
-					enemySpeed[i] = 4.0f + GetRand(5);
-					enemyActive[i] = 1;
-					break;
-				}
+				score = 0;
+				missCount = 0;
+				spawnTimer = 0;
+				for (i = 0; i < ENEMY_MAX; i++) enemyActive[i] = 0;
+				State = 1;
 			}
 		}
-
-		for (i = 0; i < ENEMY_MAX; i++)
+		else if (State == 1)
 		{
-			if (enemyActive[i] == 1)
+			spawnTimer++;
+			if (spawnTimer >= 40)
 			{
-				if (enemyDirection[i] == -1)
-				{
-					enemyX[i] += enemySpeed[i];
-					if (enemyX[i] > WIDTH) enemyActive[i] = 0;
-				}
-				else
-				{
-					enemyX[i] -= enemySpeed[i];
-					if (enemyX[i] < 0) enemyActive[i] = 0;
-				}
-			}
-		}
+				spawnTimer = 0;
 
-		if ((mouseInput & MOUSE_INPUT_LEFT) && !(oldMouseInput & MOUSE_INPUT_LEFT))
-		{
-			for (i = 0; i < ENEMY_MAX; i++)
-			{
-				if (enemyActive[i] == 1)
+				for (i = 0; i < ENEMY_MAX; i++)
 				{
-					float hdx = enemyX[i] - cx;
-					if (hdx < 0) hdx = -hdx;
-
-					if (hdx < 30.0f)
+					if (enemyActive[i] == 0)
 					{
-						enemyActive[i] = 0;
-						score += 1;
-						PlaySoundMem(LoadSoundMem("click.wav"), DX_PLAYTYPE_BACK);
+						int side = GetRand(1);
+
+						if (side == 0)
+						{
+							enemyX[i] = 10;
+							enemyDirection[i] = -1;
+						}
+						else
+						{
+							enemyX[i] = WIDTH - 10;
+							enemyDirection[i] = 1;
+						}
+
+						enemyY[i] = cy;
+						enemySpeed[i] = 4.0f + GetRand(5);
+						enemyActive[i] = 1;
 						break;
 					}
 				}
 			}
-		}
 
-		for (i = 0; i < ENEMY_MAX; i++)
-		{
-			if (enemyActive[i] == 1)
+			for (i = 0; i < ENEMY_MAX; i++)
 			{
-				DrawCircle(enemyX[i], enemyY[i], 15, GetColor(135, 206, 250), true);
+				if (enemyActive[i] == 1)
+				{
+					if (enemyDirection[i] == -1)
+					{
+						enemyX[i] += enemySpeed[i];
+						if (enemyX[i] > WIDTH) enemyActive[i] = 0;
+					}
+					else
+					{
+						enemyX[i] -= enemySpeed[i];
+						if (enemyX[i] < 0) enemyActive[i] = 0;
+					}
+				}
 			}
+
+			if ((mouseInput & MOUSE_INPUT_LEFT) && !(oldMouseInput & MOUSE_INPUT_LEFT))
+			{
+				int hitsuccess = 0;
+
+				for (i = 0; i < ENEMY_MAX; i++)
+				{
+					if (enemyActive[i] == 1)
+					{
+						float hdx = enemyX[i] - cx;
+						if (hdx < 0) hdx = -hdx;
+
+						if (hdx < 30.0f)
+						{
+							enemyActive[i] = 0;
+							score += 1;
+							hitsuccess = 1;
+							PlaySoundMem(LoadSoundMem("click.wav"), DX_PLAYTYPE_BACK);
+							break;
+						}
+					}
+				}
+
+				if (hitsuccess == 0)
+				{
+					missCount++;
+					DrawBox(0, 0, WIDTH, HEIGHT, GetColor(255, 180, 180), true);
+				}
+				else
+				{
+					missCount = 0;
+				}
+				if (missCount >= 2)
+				{
+					if (score > hiScore)
+					{
+						hiScore = score;
+					}
+
+					score = 0;
+					missCount = 0;
+					spawnTimer = 0;
+					for (i = 0; i < ENEMY_MAX; i++) enemyActive[i] = 0;
+				}
+			}
+
+			if ((mouseInput & MOUSE_INPUT_RIGHT) && !(oldMouseInput & MOUSE_INPUT_RIGHT))
+			{
+				if (score > hiScore)
+				{
+					hiScore = score;
+				}
+
+				State = 0;
+
+			}
+
+			for (i = 0; i < ENEMY_MAX; i++)
+			{
+				if (enemyActive[i] == 1)
+				{
+					DrawCircle(enemyX[i], enemyY[i], 15, GetColor(135, 206, 250), true);
+				}
+			}
+
+
+			DrawLine(cx - 4, cy, cx + 4, cy, GetColor(0, 0, 0));
+			DrawLine(cx, cy - 4, cx, cy + 4, GetColor(0, 0, 0));
+
+			DrawFormatString(30, 10, GetColor(0, 0, 0), "score; %d", score);
+			DrawFormatString(30, 30, GetColor(255, 0, 0), "HI-SC: %d", hiScore);
 		}
-
-
-
-
-
-		DrawLine(cx - 3, cy, cx + 3, cy, GetColor(0, 0, 0));
-		DrawLine(cx, cy - 3, cx, cy + 3, GetColor(0, 0, 0));
-
-		DrawFormatString(10, 10, GetColor(0, 0, 0), "score; %d", score);
-
 		ScreenFlip();
 		WaitTimer(16);
 		if (ProcessMessage() == -1) break;
